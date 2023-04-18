@@ -1,40 +1,48 @@
 class ProductManager {
- // title, description, price, thumbnail, code, stock
- // e products (array vacio)
- //met addProduct - validar que no se repita el code, todos los compos obligatorios
- // getprod para ver los productos
- // getprodbyid ver 1 prod especifico (de no haber Item not found)
- static id = 0
-constructor(title, description, price, thumbnail, code, stock){
-  this.title = title
-  this.description = description
-  this.price = price
-  this.thumbnail = thumbnail
-  this.code = code
-  this.stock = stock
-  this.products = []
-}
-addProduct(product){
-  
-  this.products.forEach((e)=>{
-    const code = Object.code(e)
-    code.forEach((code)=>{
-      if(!this.products.includes(code)){
-        console.log(`Error ${code} alredy exist`)
-        return 'Error'
-      }else{
-        this.products += product
-        
-        return 'Success'
-      }
-    })
-  }) 
-  ProductManager.id += 1
-}
-getProducts (){
-  return this.products
-}
-getProductById(){
+  #id = 0
+  constructor(){
+    this.products = []
+  }
+  getProducts (){
+    return this.products
+  }
+  addProduct(title, description, price, thumbnail, code, stock){
+    let checkData = this.products.filter((e)=> e.code === code)
+    if(checkData.length > 0){
+      console.log(`Error ${code} alredy exist`)
+      return
+    }
+    const product = {
+      title, description, price, thumbnail, code, stock
+    }
+    product.id = this.#getId()
+    this.products.push(product)
+  }
 
+  getProductById(id){
+    const productIndex = this.products.findIndex(
+      (product) => product.id === id
+    )
+    if(productIndex === -1){
+      console.log('Not found')
+      return
+    }
+    const product = this.products[productIndex]
+    return product
+  }
+  #getId(){
+    this.#id++
+    return this.#id
+  }
 }
-}
+const productManager = new ProductManager()
+
+productManager.addProduct('prueba','test', 30, 'foto', 'A',10)
+productManager.addProduct('prueba','test', 30, 'foto', 'B',10)
+productManager.addProduct('prueba','test', 3, 'Foto', 'A',10)
+console.log('-----------------------------------------')
+console.log(productManager.getProductById(1))
+console.log('-----------------------------------------')
+console.log(productManager.getProductById(3))
+console.log('-----------------------------------------')
+console.log(productManager.getProducts())
