@@ -7,6 +7,10 @@ class ProductManager {
     return this.products
   }
   addProduct(title, description, price, thumbnail, code, stock){
+    if (!title || !description || !price || !thumbnail || !code || !stock) {
+      console.log(`Error all fields are required`)
+      return
+    }
     let checkData = this.products.filter((e)=> e.code === code)
     if(checkData.length > 0){
       console.log(`Error ${code} alredy exist`)
