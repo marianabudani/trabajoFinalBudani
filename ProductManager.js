@@ -1,52 +1,104 @@
+const fs = require('fs')
+
 class ProductManager {
   #id = 0
-  constructor(){
-    this.products = []
-  }
-  getProducts (){
-    return this.products
-  }
-  addProduct(title, description, price, thumbnail, code, stock){
-    if (!title || !description || !price || !thumbnail || !code || !stock) {
-      console.log(`Error all fields are required`)
-      return
+  constructor() {
+    if(!fs.existsSync('./products.json')){
+      fs.writeFileSync('./products.json', JSON.stringify([]))
     }
-    let checkData = this.products.filter((e)=> e.code === code)
-    if(checkData.length > 0){
-      console.log(`Error ${code} alredy exist`)
-      return
-    }
-    const product = {
-      title, description, price, thumbnail, code, stock
-    }
-    product.id = this.#getId()
-    this.products.push(product)
-  }
-
-  getProductById(id){
-    const productIndex = this.products.findIndex(
-      (product) => product.id === id
-    )
-    if(productIndex === -1){
-      console.log('Not found')
-      return
-    }
-    const product = this.products[productIndex]
-    return product
   }
   #getId(){
     this.#id++
     return this.#id
   }
+  async getProducts(){
+    try {
+      const products = await fs.promises.readFile('./products.json','utf-8')
+      const productsList = JSON.parse(products)
+      if (productsList.length > 0) {
+        this.#id = Math.max(...productsList.map(p => p.id))
+      }
+      console.log(productsList);
+      return productsList
+    } catch (error) {
+      console.log(`Error products not found ${error}`)
+    }
+  }
+  async addProduct(product){
+    try {
+      const productsList = await this.getProducts()
+      product.id = this.#getId()
+      productsList.push(product)
+      await fs.promises.writeFile('./products.json',JSON.stringify(productsList))
+    } catch (error) {
+      console.log(`Error while add product ${error}`)
+    }
+  }
+  async getProductById(id){
+    try {
+      const productsList = await this.getProducts()
+      const product = productsList.find(p => p.id === id)
+      if(!product){
+        console.log(`Product with id ${id} not found`);
+        return
+      }
+      console.log(JSON.stringify(product));
+      return product 
+    } catch (error) {
+      console.log(`Error while get product by id ${id}`);
+    }
+  }
+  async updateProduct(id, updates){
+    try {
+      const productsList = await this.getProducts()
+      const productIndex = productsList.findIndex((p) => p.id === id)
+      if(productIndex === -1){
+        console.log(`Product with id ${id} not found`);
+        return
+      }
+      const updatedProduct = {...productsList[productIndex], ...updates}
+      productsList[productIndex] = updatedProduct
+      await fs.promises.writeFile('./products.json', JSON.stringify(productsList))
+      console.log(`Product with id ${id} updated successfully`);
+    } catch (error) {
+      console.log(`Error while get product by id ${id}`);
+    }
+  }
+  async deleteProduct(id) {
+    try {
+      const productsList = await this.getProducts()
+      const filteredList = productsList.filter(product => product.id !== id)
+      if (filteredList.length === productsList.length) {
+        console.log(`Product with ID ${id} not found`)
+        return
+      }
+      await fs.promises.writeFile('./products.json', JSON.stringify(filteredList))
+      console.log(`Product with ID ${id} deleted`)
+    } catch (error) {
+      console.log(`Error while deleting product with ID ${id}: ${error}`)
+    }
+  }
 }
-const productManager = new ProductManager()
-
-productManager.addProduct('prueba','test', 30, 'foto', 'A',10)
-productManager.addProduct('prueba','test', 30, 'foto', 'B',10)
-productManager.addProduct('prueba','test', 3, 'Foto', 'A',10)
-console.log('-----------------------------------------')
-console.log(productManager.getProductById(1))
-console.log('-----------------------------------------')
-console.log(productManager.getProductById(3))
-console.log('-----------------------------------------')
-console.log(productManager.getProducts())
+const products = new ProductManager()
+const test = async()=>{
+  try {
+    await products.getProducts()
+    await products.addProduct({
+      title: 'producto prueba',
+      description: 'Este es un producto prueba',
+      price: 200,
+      thumbnail: 'Sin imagen',
+      code: 'abc123',
+      stock: 25,
+    })
+    await products.getProducts()
+    await products.getProductById(1)
+    await products.getProductById(25)
+    await products.updateProduct(2, {title:'producto modificado'})
+    await products.getProductById(2)
+    await products.deleteProduct(5)
+  } catch (error) {
+    console.log(`${error}`);
+  }
+}
+test()
