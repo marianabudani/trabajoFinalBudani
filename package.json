@@ -1,0 +1,27 @@
+{
+  "name": "trabajofinalbudani",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marianabudani/trabajoFinalBudani.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marianabudani/trabajoFinalBudani/issues"
+  },
+  "homepage": "https://github.com/marianabudani/trabajoFinalBudani#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "moment": "^2.29.4",
+    "nodemon": "^2.0.22"
+  }
+}
