@@ -1,85 +1,55 @@
 import { Router } from 'express'
-import fs from 'fs'
+import ProductManager from '../../models/ProductManager.js';
+import CartManager from '../../models/CartManager.js';
 
-const CARTS_FILE_PATH = './carts.json'
-let carts = []
-let cartIdCounter = 1
-
-if(!fs.existsSync('./carts.json')){
-  fs.writeFileSync('./carts.json', JSON.stringify([]))
-}
-// Lee el archivo carts.json al iniciar la aplicación
-fs.readFile(CARTS_FILE_PATH, (err, data) => {
-  if (err) {
-    console.error(`Error while reading ${CARTS_FILE_PATH}: ${err}`)
-    return
-  }
-  try {
-    carts = JSON.parse(data)
-    console.log(`Loaded ${carts.length} carts from ${CARTS_FILE_PATH}`)
-  } catch (err) {
-    console.error(`Error while parsing ${CARTS_FILE_PATH}: ${err}`)
-  }
-})
-
-const saveCartsToFile = () => {
-  // Escribe los carritos en el archivo carts.json
-  fs.writeFile(CARTS_FILE_PATH, JSON.stringify(carts), (err) => {
-    if (err) {
-      console.error(`Error while writing ${CARTS_FILE_PATH}: ${err}`)
-      return
-    }
-    console.log(`Saved ${carts.length} carts to ${CARTS_FILE_PATH}`)
-  })
-}
-
+const productManager = new ProductManager();
+const cartManager = new CartManager(productManager);
 const cartRouter = Router()
 
-cartRouter.get('/:cid', (req, res) => {
-  const id = parseInt(req.params.cid);
-  const cart = carts.find(c => c.id === id);
-  if (!cart) {
-    res.status(404).send(`Cart with ID ${id} not found`);
-  } else {
-    res.send(cart);
-  }
-})
-
-cartRouter.post('/', (req, res) => {
+cartRouter.get('/:cid', async (req, res) => {
   try {
-    const newCart = {
-      id: cartIdCounter++,
-      products: []
+    const cid = parseInt(req.params.cid)
+    const cart = await cartManager.getCart(cid)
+    if (!cart) {
+      return res.status(404).json({ message: `Cart with id ${cid} not found` })
     }
-    carts.push(newCart)
-    saveCartsToFile() // Guarda los cambios en el archivo carts.json
-    res.status(201).send(newCart)
+    return res.json(cart.products)
   } catch (error) {
-    console.log(`Error while creating cart: ${error}`)
-    res.status(500).send('Internal server error')
+    console.log(`Error while getting products from cart: ${error}`)
+    return res.status(500).json({ message: 'Internal server error' })
+  }
+});
+
+cartRouter.post('/', async (req, res) => {
+  try {
+    const newCart = await cartManager.createCart()
+    res.status(201).json(newCart)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Internal server error' })
   }
 })
 
-cartRouter.post('/:cid/product/:pid', (req, res) => {
-  const cartId = Number(req.params.cid)
-  const productId = Number(req.params.pid)
-  // Busco el carrito
-  const cart = carts.find(c => c.id === cartId)
-  // Si no se encontró, error
+cartRouter.post('/:cid/product/:pid', async (req, res) => {
+  const cid = Number(req.params.cid)
+  const pid = Number(req.params.pid)
+  const quantity = Number(req.body.quantity || 1)
+
+  if (!cid || !pid) {
+    return res.status(400).json({ error: 'Missing required parameters' })
+  }
+
+  const cart = await cartManager.getCart(cid)
   if (!cart) {
-    return res.status(404).send(`Cart with id ${cartId} not found`)
+    return res.status(404).json({ error: `Cart with id ${cid} not found` })
   }
-  // Busco el producto
-  const productIndex = cart.products.findIndex(p => p.product === productId)
-  // Si el producto no existe, lo agrego
-  if (productIndex === -1) {
-    cart.products.push({ product: productId, quantity: 1 })
-  } else {
-    // Si el producto ya existe, incrementa su cantidad
-    cart.products[productIndex].quantity++
+
+  const addedProduct = await cartManager.addProductToCart(cid, pid, quantity)
+  if (!addedProduct) {
+    return res.status(404).json({ error: `Product with id ${pid} not found` })
   }
-  saveCartsToFile() // Guarda los cambios en el archivo carts.json
-  return res.status(200).send(`Product ${productId} updated in cart ${cartId}`)
-})
+
+  res.json(addedProduct)
+});
 
 export { cartRouter }
