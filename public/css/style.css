@@ -1,0 +1,32 @@
+* {
+	box-sizing: border-box;
+	margin: 0px;
+	padding: 0px;
+	background-color: rgb(175, 155, 207);
+}
+input {
+	border: 1px solid #2700b6;
+	border-radius: 5px;
+	padding: 0 10px;
+	font-size: 16px;
+	box-sizing: border-box;
+	margin-bottom: 10px;
+}
+
+button {
+	border: 1px solid #126339;
+	border-radius: 5px;
+	padding: 0 10px;
+	font-size: 16px;
+	box-sizing: border-box;
+	margin-bottom: 10px;
+	background-color: #317051;
+	color: #fff;
+}
+
+#contenedor{
+	display: flex;
+	margin-top: 100px;
+	justify-content: center;
+	align-items: center;
+}

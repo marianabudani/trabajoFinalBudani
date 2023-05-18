@@ -1,0 +1,30 @@
+<h1 class="productListTitle">Product List</h1>
+
+<fieldset><legend><h4>Add new product</h4></legend>
+<form>
+    <label for="prodTitle">Name: </label><input type="text" id="prodTitle" name="prodTitle" />
+    <label for="prodDesc">Description: </label><textarea id="prodDesc" name="prodDesc" /></textarea>
+    <label for="prodPrice">Price: </label><input type="text" id="prodPrice" name="prodPrice" />
+    <label for="prodStock">Stock: </label><input type="text" id="prodStock" name="prodStock" />
+    <label for="prodCode">Code: </label><input type="text" id="prodCode" name="prodCode" />
+    <label for="prodCategory">Category: </label><input type="text" id="prodCategory" name="prodCategory" />
+    <label for="prodThumbnails">Image: </label><input type="text" id="prodThumbnails" name="prodThumbnails" />
+    <button onclick="uploadProduct()">Load product</button>
+</form>
+</fieldset>
+
+<fieldset><legend><h4>Add nuevo product</h4></legend>
+    <label for="deletedProdId">Id product: </label><input type="text" id="deletedProdId" name="deletedProdId" />
+    <button onclick="eraseProduct()">Delete</button>
+</fieldset>
+
+<h4>List:</h4>
+
+<div class="productListContainer">
+    <ul id="productList">
+    </ul>
+</div>
+<!-- Incluimos el script de Socket.io -->
+<script src='/socket.io/socket.io.js'></script>
+<!-- Incluimos nuestro script -->
+<script src='/js/main.js'></script>

@@ -58,7 +58,7 @@ export default class CartManager {
       return;
     }
 
-    const product = await this.productManager.getProduct(productId);
+    const product = await this.productManager.getProductById(productId);
     if (!product) {
       console.log(`Product with id ${productId} not found`);
       return;

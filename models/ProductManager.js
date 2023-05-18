@@ -9,7 +9,7 @@ const productSchema = Joi.object({
   status: Joi.boolean().required(),
   stock: Joi.number().required(),
   category: Joi.string().required(),
-  thumbnails: Joi.array().items(Joi.string()).required(),
+  thumbnails: Joi.array().items(Joi.string()),
 })
 
 export default class ProductManager {

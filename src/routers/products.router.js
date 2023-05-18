@@ -61,8 +61,13 @@ productsRouter.put('/:pid', async (req, res) => {
   try {
     const productId = req.params.pid;
     const updatedFields = req.body;
-    await productManager.updateProduct(productId, updatedFields)
-    res.status(200).send(`Product with id ${productId} updated successfully`)
+    const productSearch = await productManager.getProductById(productId)
+    if(!productSearch){
+      res.status(404).send(`Product with ID ${id} not found`)
+    }else {
+      await productManager.updateProduct(productId, updatedFields)
+      res.status(200).send(`Product with id ${productId} updated successfully`)
+    }
   } catch (error) {
     console.log(`Error while updating product: ${error}`)
     res.status(500).send('Internal server error')
