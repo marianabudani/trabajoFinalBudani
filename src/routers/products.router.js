@@ -1,17 +1,17 @@
 import { Router } from "express"
-import ProductManager from "../../models/ProductManager.js"
+import productManager from '../DAO/dbManagers/product.manager.js'
+import { io } from '../util.js'
 
-const productManager = new ProductManager()
 const productsRouter = Router()
 
 productsRouter.get('/', async(req, res) => {
   try {
-    let limit = req.query.limit
-    let products = await productManager.getProducts()
-    if(limit){
-      products = products.slice(0, limit)
-    }
-    res.send(products)
+    let limit = parseInt(req.query.limit) || 10
+    const page = parseInt(req.query.page) || 1
+    const sort = req.query.sort
+    const query = req.query.query || {}
+    let products = await productManager.getProducts(limit, page, sort, query)
+    res.status(200).send(products)
   } catch (error) {
     res.status(500).send(`Error getting the products ${error}`)
   }

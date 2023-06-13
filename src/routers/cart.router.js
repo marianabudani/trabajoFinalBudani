@@ -1,11 +1,15 @@
 import { Router } from 'express'
-import ProductManager from '../../models/ProductManager.js';
-import CartManager from '../../models/CartManager.js';
+import cartManager from '../DAO/dbManagers/cart.maganer.js'
 
-const productManager = new ProductManager();
-const cartManager = new CartManager(productManager);
 const cartRouter = Router()
 
+cartRouter.get("/", async (req, res) => {
+  try {
+    res.status(200).send(await cartManager.getCarts());
+  } catch (err) {
+    res.status(400).send(err);
+  }
+})
 cartRouter.get('/:cid', async (req, res) => {
   try {
     const cid = parseInt(req.params.cid)
@@ -18,7 +22,7 @@ cartRouter.get('/:cid', async (req, res) => {
     console.log(`Error while getting products from cart: ${error}`)
     return res.status(500).json({ message: 'Internal server error' })
   }
-});
+})
 
 cartRouter.post('/', async (req, res) => {
   try {
@@ -50,6 +54,21 @@ cartRouter.post('/:cid/product/:pid', async (req, res) => {
   }
 
   res.json(addedProduct)
-});
+})
+cartRouter.delete("/:cid/product/:pid", async (req, res) => {
+  try {
+    res.status(201).send(await cartManager.deleteCartProduct(req.params.cid, req.params.pid))
+  } catch (err) {
+    res.status(404).json({ error: `Product with id ${pid} not found` })
+  }
+})
+
+cartRouter.put("/:cid/product/:pid", async (req, res) => {
+  try {
+    res.status(201).send(await cartManager.updateCartProduct(req.params.cid, req.params.pid, req.body))
+  } catch (err) {
+    res.status(404).json({ error: `Product with id ${pid} not found` })
+  }
+})
 
 export { cartRouter }
