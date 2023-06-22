@@ -18,7 +18,24 @@ function render(data) {
     .join(" ");
   document.getElementById("productList").innerHTML = html;
 }
+const renderProducts = (products) => {
 
+  const html = document.getElementById('product');
+
+  html.innerHTML = '';
+  products.forEach((product) => {
+    const elementHtml = document.createElement('div');
+    elementHtml.innerHTML = `
+      <p>${product.title}</p>
+      <p>${product.code}</p>
+      <p>${product.price}</p>
+      <p>${product.stock}</p>
+    `;
+    html.appendChild(elementHtml);
+  });
+
+
+};
 socket.on("productList", (data) => {
   render(data);
 });

@@ -4,7 +4,8 @@ import { productsRouter } from './routers/products.router.js'
 import handlebars from 'express-handlebars'
 import { Server } from 'socket.io'
 import viewRouter from './routers/view.router.js'
-import ProductManager from '../models/ProductManager.js'
+import ProductManager from '../src/controllers/DAO/Manager/ProductManager.js'
+import mongoose from 'mongoose'
 
 const app = express()
 const port = 8080
@@ -20,6 +21,9 @@ app.use('/api/cart', cartRouter)
 app.use('/api/products', productsRouter)
 app.use('/', viewRouter)
 
+mongoose.connect('mongodb+srv://marianabudani:admin123@codercluster.bibtfvx.mongodb.net/?retryWrites=true&w=majority', (err) =>{
+
+})
 const webServer = app.listen(port, () => {
   console.log(`Server runnin in port ${port}`)
 })

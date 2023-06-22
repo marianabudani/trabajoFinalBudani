@@ -1,37 +1,23 @@
-import fs from 'fs'
-import Joi from 'joi'
-
-const productSchema = Joi.object({
-  title: Joi.string().required(),
-  description: Joi.string().required(),
-  code: Joi.string().required(),
-  price: Joi.number().required(),
-  status: Joi.boolean().required(),
-  stock: Joi.number().required(),
-  category: Joi.string().required(),
-  thumbnails: Joi.array().items(Joi.string()),
-})
+import { promises } from 'fs'
+import { nanoid } from 'nanoid'
 
 export default class ProductManager {
-  #id = 0
   constructor() {
-    if(!fs.existsSync('./products.json')){
-      fs.writeFileSync('./products.json', JSON.stringify([]))
+    this.products = []
+    this.product = {
+      id: 0,
+      title: '',
+      description: '',
+      price: 0,
+      code: '',
+      stock: 0,
+      category: ''
     }
-  }
-  #getId(){
-    this.#id++
-    return this.#id
   }
   async getProducts(){
     try {
-      const products = await fs.promises.readFile('./products.json','utf-8')
-      const productsList = JSON.parse(products)
-      if (productsList.length > 0) {
-        this.#id = Math.max(...productsList.map(p => p.id))
-      }
-      //console.log(productsList);
-      return productsList
+      const productsList = await promises.readFile('./src/models/products.json', 'utf-8');
+      return JSON.parse(productsList);
     } catch (error) {
       console.log(`Error products not found ${error}`)
     }
@@ -39,37 +25,28 @@ export default class ProductManager {
   async addProduct(product) {
     try {
       if (!product.title || !product.description || !product.code || !product.price || !product.stock || !product.category) {
-        throw new Error('All fields except images are required')
-      }
+        let productList = JSON.parse(await promises.readFile('./src/models/products.json', 'utf-8'))
 
-      if (product.status === undefined || product.status === null) {
-        product.status = true
-      }
+        product.id = nanoid()
+        this.product.title = product.title
+        this.product.description = product.description
+        this.product.price = product.price
+        this.product.code = product.code
+        this.product.stock = product.stock
+        this.product.category = product.category
 
-      const productsList = await this.getProducts()
+        const productFilter = productList.filter(prod => prod.code === product.code)
 
-      const { error, value } = productSchema.validate(product, { abortEarly: false })
-      if (error) {
-        const errors = error.details.map((errorDetail) => errorDetail.message)
-        console.log(`Error while validating product fields: ${errors.join(', ')}`)
-        return
-      }
+        if (productFilter.length > 0) {
+            console.log('out of stock')
+            return
+        }
+        const cart = [...productList, product]
+        console.log(`product: ${product.title} added`);
+        writeFileSync('./src/models/products.json', JSON.stringify(cart));
 
-      const productExists = productsList.find(p => p.code === product.code)
-      if (productExists) {
-        console.log(`Product with code ${product.code} already exists`)
-        return
-      }
-
-      const newProduct = {
-        id: this.#getId(),
-        ...value
-      }
-
-      productsList.push(newProduct)
-      await fs.promises.writeFile('./products.json', JSON.stringify(productsList))
-      console.log(`Product with code ${product.code} added successfully`)
-    } catch (error) {
+      } else (console.log('All fields are required'))
+      } catch (error) {
       console.log(`Error while adding product: ${error}`)
     }
   }
@@ -119,7 +96,7 @@ export default class ProductManager {
       productsList[productIndex] = updatedProduct
   
       // Guardo
-      await fs.promises.writeFile('./products.json', JSON.stringify(productsList))
+      await promises.writeFile('./products.json', JSON.stringify(productsList))
       console.log(`Product with id ${productId} updated successfully`)
     } catch (error) {
       console.log(`Error while updating product: ${error}`)
@@ -136,7 +113,7 @@ export default class ProductManager {
       if (filteredList.length === productsList.length) {
         throw new Error(`Product with ID ${id} not found`);
       }
-      await fs.promises.writeFile('./products.json', JSON.stringify(filteredList));
+      await promises.writeFile('./products.json', JSON.stringify(filteredList));
       console.log(`Product with ID ${id} deleted`);
     } catch (error) {
       console.log(`Error while deleting product with ID ${id}: ${error}`);
