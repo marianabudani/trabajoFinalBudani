@@ -1,6 +1,12 @@
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { Server } from 'socket.io'
+import express from 'express'
 
-export default __dirname
+const app = express()
+const port = 8080
+
+const httpServer = app.listen(port, () => {
+  console.log(`Server up in http://localhost:${port}`)
+})
+const io = new Server(httpServer)
+
+export { app, io }
